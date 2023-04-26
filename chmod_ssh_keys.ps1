@@ -1,3 +1,5 @@
+# Sets SSH private key files with strict permissions to let Vagrant use keys
+# and help avoid password prompts on every vagrant ssh command.
 Get-ChildItem -Recurse -File -Filter private_key | ForEach-Object {
     New-Variable -Name keyFile -Value $_
     if (-not (Test-Path -Path $keyFile -PathType Leaf)) {
