@@ -9,7 +9,7 @@ Experimental Vagrant boxes for testing https://github.com/kubernetes-sigs/sig-wi
 
 ## Features
 
-- VirtualBox Guest Additions 7.0.8
+- VirtualBox Guest Additions 7.0.8 (including [workaround for libXt.so missing](https://github.com/dotless-de/vagrant-vbguest/issues/425#issuecomment-1515225030) on Ubuntu 22.04)
 - Set explicit VirtualBox OS type
 - Disabled VirtualBox GUI features
 - Disabled VirtualBox 2D and 3D acceleration
