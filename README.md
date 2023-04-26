@@ -38,6 +38,7 @@ The boxes are simply packaged VirtualBox machines:
     ```
     cd windows2019
     vagrant up
+    # Apply tweaks - the gist of this project!
     vagrant package --base <machine name> --output <name>.box
     ```
 2. Upload `<name>.box` file to app.vagrantup.com
