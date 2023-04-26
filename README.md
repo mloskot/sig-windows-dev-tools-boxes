@@ -4,7 +4,7 @@ Experimental Vagrant boxes for testing https://github.com/kubernetes-sigs/sig-wi
 
 ## Boxes
 
-- [mloskot//sig-windows-dev-tools-ubuntu-2204](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-ubuntu-2204) is tweaked version of [roboxes/ubuntu2204](https://app.vagrantup.com/roboxes/boxes/ubuntu2204)
+- [mloskot/sig-windows-dev-tools-ubuntu-2204](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-ubuntu-2204) is tweaked version of [roboxes/ubuntu2204](https://app.vagrantup.com/roboxes/boxes/ubuntu2204)
 - [mloskot/sig-windows-dev-tools-windows-2019](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-windows-2019) is tweak version of [sig-windows-dev-tools/boxes/windows-2019](https://app.vagrantup.com/sig-windows-dev-tools/boxes/windows-2019)
 
 ## Features
