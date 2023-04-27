@@ -19,6 +19,6 @@ $log = (Join-Path -Path (Get-Location) -ChildPath ('run-{0}.log' -f (Get-Date).T
     }
 } | Tee-Object -FilePath $log
 Write-Host '-----------------------------------------'
-Get-Content $log | Select-String -Pattern 'Done' | Tee-Object -FilePath $log -Append
-Write-Host "Output saved in $log"
+Write-Host "Output saved in $log,run times summary:"
+Get-Content $log | Select-String -Pattern 'Done'
 Pop-Location
