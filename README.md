@@ -37,12 +37,14 @@ There is no sophisticated build pipeline using configuration management tools.
 The boxes are simply packaged VirtualBox machines:
 
 1. Create VirtualBox machine
-    ```
+
+    ```console
     cd windows2019
     vagrant up
     # Apply tweaks - the gist of this project!
     vagrant package --base <machine name> --output <name>.box
     ```
+
 2. Upload `<name>.box` file to app.vagrantup.com
 3. Update `Vagrantfile`-s of tests with new version/box
 4. Test with `.\run_test.ps1 test_<box>`
