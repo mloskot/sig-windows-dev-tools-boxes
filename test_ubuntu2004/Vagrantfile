@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vagrant.plugins = ["vagrant-vbguest"]
+  config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
+
+  config.vm.box = "mloskot/sig-windows-dev-tools-ubuntu-2004"
+  config.vm.box_version = "1.0"
+
+  config.vm.provider :virtualbox do |vb|
+    vb.cpus = 2
+    vb.memory = 4096
+    vb.gui = false
+    # Explicitly guest type (above) and OS type
+    vb.customize ["modifyvm", :id, "--ostype", 'Ubuntu20_LTS_64']
+    # Enabling I/O APIC is required for 64-bit guests
+    vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    # Force newer VirtualBox default graphics controller for Linux guests
+    vb.customize ['modifyvm', :id, '--graphicscontroller', 'vmsvga']
+    # Explicitly disable unnecessary features for better performance
+    vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+    vb.customize ["modifyvm", :id, "--accelerate2dvideo", "off"]
+    vb.customize ['modifyvm', :id, '--clipboard', 'disabled']
+    vb.customize ['modifyvm', :id, '--draganddrop', 'disabled']
+    vb.customize ['modifyvm', :id, '--vrde', 'off']
+  end
+
+end
