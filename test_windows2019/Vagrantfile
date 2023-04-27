@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
   config.vm.guest = :windows
 
   config.vm.provider :virtualbox do |vb|
-    vb.cpus = 4
+    vb.cpus = 2
     vb.memory = 8192
     vb.gui = false
     # Explicitly guest type (above) and OS type
