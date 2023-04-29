@@ -8,9 +8,10 @@ Experimental Vagrant boxes for testing https://github.com/kubernetes-sigs/sig-wi
 
 The avaialble custom twaeked versions of test boxes:
 
-- [mloskot/sig-windows-dev-tools-windows-2019](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-windows-2019) based on [sig-windows-dev-tools/boxes/windows-2019](https://app.vagrantup.com/sig-windows-dev-tools/boxes/windows-2019)
-- [mloskot/sig-windows-dev-tools-ubuntu-2204](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-ubuntu-2204) based on [roboxes/ubuntu2204](https://app.vagrantup.com/roboxes/boxes/ubuntu2204)
 - [mloskot/sig-windows-dev-tools-ubuntu-2004](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-ubuntu-2004) based on [roboxes/ubuntu2004](https://app.vagrantup.com/roboxes/boxes/ubuntu2004)
+- [mloskot/sig-windows-dev-tools-ubuntu-2204](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-ubuntu-2204) based on [roboxes/ubuntu2204](https://app.vagrantup.com/roboxes/boxes/ubuntu2204)
+- [mloskot/sig-windows-dev-tools-windows-2019](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-windows-2019) based on [sig-windows-dev-tools/boxes/windows-2019](https://app.vagrantup.com/sig-windows-dev-tools/boxes/windows-2019)
+- [mloskot/sig-windows-dev-tools-windows-2022](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-windows-2022) based on [valengus/windows-2022-standard-core](https://app.vagrantup.com/valengus/boxes/windows-2022-standard-core)
 
 ## Features
 
@@ -21,6 +22,7 @@ The avaialble custom twaeked versions of test boxes:
 - Disabled VirtualBox Remote Desktop
 - Windows box with WinRM startup forced to `auto` instead of `auto (delayed)`: `sc config WinRM start= auto`
 - Windows Firewall disabled: `netsh advfirewall set allprofiles state off`
+- Windows Defender Antivirus disabled
 
 ## Test
 
