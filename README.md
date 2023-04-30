@@ -11,7 +11,7 @@ The avaialble custom twaeked versions of test boxes:
 - [mloskot/sig-windows-dev-tools-ubuntu-2004](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-ubuntu-2004) based on [roboxes/ubuntu2004](https://app.vagrantup.com/roboxes/boxes/ubuntu2004)
 - [mloskot/sig-windows-dev-tools-ubuntu-2204](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-ubuntu-2204) based on [roboxes/ubuntu2204](https://app.vagrantup.com/roboxes/boxes/ubuntu2204)
 - [mloskot/sig-windows-dev-tools-windows-2019](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-windows-2019) based on [sig-windows-dev-tools/boxes/windows-2019](https://app.vagrantup.com/sig-windows-dev-tools/boxes/windows-2019)
-- [mloskot/sig-windows-dev-tools-windows-2022](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-windows-2022) based on [valengus/windows-2022-standard-core](https://app.vagrantup.com/valengus/boxes/windows-2022-standard-core)
+- Vanilla OS, without any Kubernetes or containers tools [mloskot/sig-windows-dev-tools-windows-2022](https://app.vagrantup.com/mloskot/boxes/sig-windows-dev-tools-windows-2022) based on [valengus/windows-2022-standard-core](https://app.vagrantup.com/valengus/boxes/windows-2022-standard-core)
 
 ## Features
 
