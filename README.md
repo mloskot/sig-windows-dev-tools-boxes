@@ -21,7 +21,12 @@ The avaialble custom twaeked versions of test boxes:
 - Disabled VirtualBox 2D and 3D acceleration
 - Disabled VirtualBox Remote Desktop
 - Windows box with WinRM startup forced to `auto` instead of `auto (delayed)`: `sc config WinRM start= auto`
-- Windows Firewall disabled: `netsh advfirewall set allprofiles state off`
+- Windows Firewall disabled:
+  ```cmd
+  netsh advfirewall show allprofiles
+  netsh advfirewall set allprofiles state off
+  netsh advfirewall show allprofiles
+  ```
 - Windows Defender Antivirus disabled
 
 ## Test
