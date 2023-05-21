@@ -78,7 +78,7 @@ Install-ContainerDHost
     }
     else
     {
-        Install-Containerd -ContainerDVersion $ContainerDVersion -NerdCTLVersion $NerdCTLVersion -ContainerBaseImage $ContainerBaseImage
+        Install-Containerd -ContainerDVersion $ContainerDVersion -NerdCTLVersion $NerdCTLVersion -WinCNIVersion $WinCNIVersion -ContainerBaseImage $ContainerBaseImage
     }
 
     Remove-Item $global:ErrorFile
