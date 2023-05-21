@@ -4,6 +4,7 @@
 # - Assuming Windows Feature Containers is already installed
 # - Remove tests, staging and related functions as unused.
 # - Removed unused script arameters
+# - Added verbose logging
 ############################################################
 # Script to set up a VM instance to run with containerd and nerdctl
 ############################################################
@@ -182,8 +183,6 @@ Install-Containerd()
 
     Test-Admin
 
-    Write-Output "Downloading containerd, nerdCTL, and Windows CNI binaries..."
-
     $ContainerdPath = "$Env:ProgramFiles\containerd"
     $NerdCTLPath = "$Env:ProgramFiles\nerdctl"
     $WinCNIPath = "$ContainerdPath\cni\bin"
@@ -194,20 +193,26 @@ Install-Containerd()
     if (!(Test-Path $WinCNIPath)) { mkdir -Force -Path $WinCNIPath | Out-Null }
 
     $ContainerdZip = "containerd-$ContainerDVersion-windows-amd64.tar.gz"
+    Write-Output "Downloading $ContainerdZip to $ContainerdPath\$ContainerdZip"
     Copy-File "https://github.com/containerd/containerd/releases/download/v$ContainerDVersion/$ContainerdZip" "$ContainerdPath\$ContainerdZip"
     tar.exe -xvf "$ContainerdPath\$ContainerdZip" -C $ContainerdPath
+    Remove-Item -Path "$ContainerdPath\$ContainerdZip" -Force
     Write-Output "Containerd binaries added to $ContainerdPath"
 
     #Download and extract nerdctl binaries
     $NerdCTLZip = "nerdctl-$NerdCTLVersion-windows-amd64.tar.gz"
+    Write-Output "Downloading $NerdCTLZip to $NerdCTLPath\$NerdCTLZip"
     Copy-File "https://github.com/containerd/nerdctl/releases/download/v$NerdCTLVersion/$NerdCTLZip" "$NerdCTLPath\$NerdCTLZip"
     tar.exe -xvf "$NerdCTLPath\$NerdCTLZip" -C $NerdCTLPath
+    Remove-Item -Path "$NerdCTLPath\$NerdCTLZip" -Force
     Write-Output "NerdCTL binary added to $NerdCTLPath"
 
     #Download and extract win cni binaries
     $WinCNIZip = "windows-container-networking-cni-amd64-v$WinCNIVersion.zip"
+    Write-Output "Downloading $WinCNIZip to $WinCNIPath\$WinCNIZip"
     Copy-File "https://github.com/microsoft/windows-container-networking/releases/download/v$WinCNIVersion/$WinCNIZip" "$WinCNIPath\$WinCNIZip"
     tar.exe -xvf "$WinCNIPath\$WinCNIZip" -C $WinCNIPath
+    Remove-Item -Path "$WinCNIPath\$WinCNIZip" -Force
     Write-Output "CNI plugin binaries added to $WinCNIPath"
 
     Write-Output "Adding $ContainerdPath, $NerdCTLPath, $WinCNIPath to the path"
