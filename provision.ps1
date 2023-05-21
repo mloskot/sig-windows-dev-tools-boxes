@@ -28,6 +28,8 @@ Write-Host "[provision.ps1] Uninstalling Windows Features"
 Uninstall-WindowsFeature System-DataArchiver # arbitrary pick to die-hard slim down of image
 Uninstall-WindowsFeature NET-WCF-Services45  # arbitrary pick to die-hard slim down of image
 
+Write-Host "[provision.ps1] Installing Windows Features"
+Install-WindowsFeature Containers # required by ContainerD
 Write-Host "[provision.ps1] Setting PowerShell as OpenSSH default shell"
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\OpenSSH' -Name DefaultShell -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 

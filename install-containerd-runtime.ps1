@@ -1,6 +1,9 @@
 # Source: https://raw.githubusercontent.com/microsoft/Windows-Containers/Main/helpful_tools/Install-ContainerdRuntime/install-containerd-runtime.ps1
 # Changes (mloskot):
-# - Bump versions of containerd and nerdctl to latest
+# - Bump versions of containerd and nerdctl to latest.
+# - Assuming Windows Feature Containers is already installed
+# - Remove tests, staging and related functions as unused.
+# - Removed unused script arameters
 ############################################################
 # Script to set up a VM instance to run with containerd and nerdctl
 ############################################################
@@ -31,23 +34,8 @@
 
     .PARAMETER WinCNIVersion
 
-    .PARAMETER ExternalNetAdapter
-        Specify a specific network adapter to bind to a DHCP network
-
-    .PARAMETER Force 
-        If a restart is required, forces an immediate restart.
-        
-    .PARAMETER HyperV 
-        If passed, prepare the machine for Hyper-V containers
-
-    .PARAMETER NoRestart
-        If a restart is required the script will terminate and will not reboot the machine
-
     .PARAMETER ContainerBaseImage
         Use this to specifiy the URI of the container base image you wish to pull
-
-    .PARAMETER TransparentNetwork
-        If passed, use DHCP configuration. (alias -UseDHCP)
 
     .EXAMPLE
         .\install-containerd-runtime.ps1
@@ -70,290 +58,15 @@ param(
     $WinCNIVersion = "0.3.0",
 
     [string]
-    $ExternalNetAdapter,
-
-    [switch]
-    $Force,
-
-    [switch]
-    $HyperV,
-
-    [switch]
-    $NoRestart,
-
-    [Parameter(DontShow)]
-    [switch]
-    $PSDirect,
-
-    [string]
-    $ContainerBaseImage,
-
-    [Parameter(ParameterSetName="Staging", Mandatory)]
-    [switch]
-    $Staging,
-
-    [switch]
-    [alias("UseDHCP")]
-    $TransparentNetwork
+    $ContainerBaseImage
 )
 
-$global:RebootRequired = $false
-
 $global:ErrorFile = "$pwd\install-container-runtime.err"
-
-$global:BootstrapTask = "ContainerBootstrap"
-
-$global:HyperVImage = "NanoServer"
-
-function
-Restart-And-Run()
-{
-    Test-Admin
-
-    Write-Output "Restart is required; restarting now..."
-
-    $argList = $script:MyInvocation.Line.replace($script:MyInvocation.InvocationName, "")
-
-    #
-    # Update .\ to the invocation directory for the bootstrap
-    #
-    $scriptPath = $script:MyInvocation.MyCommand.Path
-
-    $argList = $argList -replace "\.\\", "$pwd\"
-
-    if ((Split-Path -Parent -Path $scriptPath) -ne $pwd)
-    {
-        $sourceScriptPath = $scriptPath
-        $scriptPath = "$pwd\$($script:MyInvocation.MyCommand.Name)"
-
-        Copy-Item $sourceScriptPath $scriptPath
-    }
-
-    Write-Output "Creating scheduled task action ($scriptPath $argList)..."
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoExit $scriptPath $argList"
-
-    Write-Output "Creating scheduled task trigger..."
-    $trigger = New-ScheduledTaskTrigger -AtLogOn
-
-    Write-Output "Registering script to re-run at next user logon..."
-    Register-ScheduledTask -TaskName $global:BootstrapTask -Action $action -Trigger $trigger -RunLevel Highest | Out-Null
-
-    try
-    {
-        if ($Force)
-        {
-            Restart-Computer -Force
-        }
-        else
-        {
-            Restart-Computer
-        }
-    }
-    catch
-    {
-        Write-Error $_
-
-        Write-Output "Please restart your computer manually to continue script execution."
-    }
-
-    exit
-}
-
-
-function
-Install-Feature
-{
-    [CmdletBinding()]
-    param(
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $FeatureName
-    )
-
-    Write-Output "Querying status of Windows feature: $FeatureName..."
-    if (Get-Command Get-WindowsFeature -ErrorAction SilentlyContinue)
-    {
-        if ((Get-WindowsFeature $FeatureName).Installed)
-        {
-            Write-Output "Feature $FeatureName is already enabled."
-        }
-        else
-        {
-            Test-Admin
-
-            Write-Output "Enabling feature $FeatureName..."
-        }
-
-        $featureInstall = Add-WindowsFeature $FeatureName
-
-        if ($featureInstall.RestartNeeded -eq "Yes")
-        {
-            $global:RebootRequired = $true;
-        }
-    }
-    else
-    {
-        if ((Get-WindowsOptionalFeature -Online -FeatureName $FeatureName).State -eq "Disabled")
-        {
-            if (Test-Nano)
-            {
-                throw "This NanoServer deployment does not include $FeatureName.  Please add the appropriate package"
-            }
-
-            Test-Admin
-
-            Write-Output "Enabling feature $FeatureName..."
-            $feature = Enable-WindowsOptionalFeature -Online -FeatureName $FeatureName -All -NoRestart
-
-            if ($feature.RestartNeeded -eq "True")
-            {
-                $global:RebootRequired = $true;
-            }
-        }
-        else
-        {
-            Write-Output "Feature $FeatureName is already enabled."
-
-            if (Test-Nano)
-            {
-                #
-                # Get-WindowsEdition is not present on Nano.  On Nano, we assume reboot is not needed
-                #
-            }
-            elseif ((Get-WindowsEdition -Online).RestartNeeded)
-            {
-                $global:RebootRequired = $true;
-            }
-        }
-    }
-}
-
-
-function
-New-ContainerTransparentNetwork
-{
-    if ($ExternalNetAdapter)
-    {
-        $netAdapter = (Get-NetAdapter | Where-Object {$_.Name -eq "$ExternalNetAdapter"})[0]
-    }
-    else
-    {
-        $netAdapter = (Get-NetAdapter |Where-Object {($_.Status -eq 'Up') -and ($_.ConnectorPresent)})[0]
-    }
-
-    Write-Output "Creating container network (Transparent)..."
-    New-ContainerNetwork -Name "Transparent" -Mode Transparent -NetworkAdapterName $netAdapter.Name | Out-Null
-}
-
 
 function
 Install-ContainerDHost
 {
     "If this file exists when Install-ContainerDHost.ps1 exits, the script failed!" | Out-File -FilePath $global:ErrorFile
-
-    if (Test-Client)
-    {
-        if (-not $HyperV)
-        {
-            Write-Output "Enabling Hyper-V containers by default for Client SKU"
-            $HyperV = $true
-        }    
-    }
-    #
-    # Validate required Windows features
-    #
-    Install-Feature -FeatureName Containers
-
-    if ($HyperV)
-    {
-        Install-Feature -FeatureName Hyper-V
-    }
-
-    if ($global:RebootRequired)
-    {
-        if ($NoRestart)
-        {
-            Write-Warning "A reboot is required; stopping script execution"
-            exit
-        }
-
-        Restart-And-Run
-    }
-
-    #
-    # Unregister the bootstrap task, if it was previously created
-    #
-    if ($null -ne (Get-ScheduledTask -TaskName $global:BootstrapTask -ErrorAction SilentlyContinue))
-    {
-        Unregister-ScheduledTask -TaskName $global:BootstrapTask -Confirm:$false
-    }
-
-    #
-    # Configure networking
-    #
-    if ($($PSCmdlet.ParameterSetName) -ne "Staging")
-    {
-        if ($TransparentNetwork)
-        {
-            Write-Output "Waiting for Hyper-V Management..."
-            $networks = $null
-
-            try
-            {
-                $networks = Get-ContainerNetwork -ErrorAction SilentlyContinue
-            }
-            catch
-            {
-                #
-                # If we can't query network, we are in bootstrap mode.  Assume no networks
-                #
-            }
-
-            if ($networks.Count -eq 0)
-            {
-                Write-Output "Enabling container networking..."
-                New-ContainerTransparentNetwork
-            }
-            else
-            {
-                Write-Output "Networking is already configured.  Confirming configuration..."
-                
-                $transparentNetwork = $networks |Where-Object { $_.Mode -eq "Transparent" }
-
-                if ($null -eq $transparentNetwork)
-                {
-                    Write-Output "We didn't find a configured external network; configuring now..."
-                    New-ContainerTransparentNetwork
-                }
-                else
-                {
-                    if ($ExternalNetAdapter)
-                    {
-                        $netAdapters = (Get-NetAdapter | Where-Object {$_.Name -eq "$ExternalNetAdapter"})
-
-                        if ($netAdapters.Count -eq 0)
-                        {
-                            throw "No adapters found that match the name $ExternalNetAdapter"
-                        }
-
-                        $netAdapter = $netAdapters[0]
-                        $transparentNetwork = $networks | Where-Object { $_.NetworkAdapterName -eq $netAdapter.InterfaceDescription }
-
-                        if ($null-eq $transparentNetwork)
-                        {
-                            throw "One or more external networks are configured, but not on the requested adapter ($ExternalNetAdapter)"
-                        }
-
-                        Write-Output "Configured transparent network found: $($transparentNetwork.Name)"
-                    }
-                    else
-                    {
-                        Write-Output "Configured transparent network found: $($transparentNetwork.Name)"
-                    }
-                }
-            }
-        }
-    }
 
     #
     # Install, register, and start Containerd
@@ -370,7 +83,9 @@ Install-ContainerDHost
     Remove-Item $global:ErrorFile
 
     Write-Output "Script complete!"
-}$global:AdminPriviledges = $false
+}
+
+$global:AdminPriviledges = $false
 $global:ContainerDDataPath = "$($env:ProgramFiles)\container"
 $global:ContainerDServiceName = "containerd"
 
@@ -397,32 +112,7 @@ Copy-File
     }
     elseif ($null -ne ($SourcePath -as [System.URI]).AbsoluteURI)
     {
-        if (Test-Nano)
-        {
-            $handler = New-Object System.Net.Http.HttpClientHandler
-            $client = New-Object System.Net.Http.HttpClient($handler)
-            $client.Timeout = New-Object System.TimeSpan(0, 30, 0)
-            $cancelTokenSource = [System.Threading.CancellationTokenSource]::new() 
-            $responseMsg = $client.GetAsync([System.Uri]::new($SourcePath), $cancelTokenSource.Token)
-            $responseMsg.Wait()
-
-            if (!$responseMsg.IsCanceled)
-            {
-                $response = $responseMsg.Result
-                if ($response.IsSuccessStatusCode)
-                {
-                    $downloadedFileStream = [System.IO.FileStream]::new($DestinationPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write)
-                    $copyStreamOp = $response.Content.CopyToAsync($downloadedFileStream)
-                    $copyStreamOp.Wait()
-                    $downloadedFileStream.Close()
-                    if ($null -ne $copyStreamOp.Exception)
-                    {
-                        throw $copyStreamOp.Exception
-                    }      
-                }
-            }  
-        }
-        elseif ($PSVersionTable.PSVersion.Major -ge 5)
+        if ($PSVersionTable.PSVersion.Major -ge 5)
         {
             #
             # We disable progress display because it kills performance for large downloads (at least on 64-bit PowerShell)
@@ -442,7 +132,6 @@ Copy-File
         throw "Cannot copy from $SourcePath"
     }
 }
-
 
 function 
 Test-Admin()
@@ -469,58 +158,6 @@ Test-Admin()
         throw "You must run this script as administrator"   
     }
 }
-
-
-function 
-Test-Client()
-{
-    return (-not ((Get-Command Get-WindowsFeature -ErrorAction SilentlyContinue) -or (Test-Nano)))
-}
-
-
-function 
-Test-Nano()
-{
-    $EditionId = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'EditionID').EditionId
-
-    return (($EditionId -eq "ServerStandardNano") -or 
-            ($EditionId -eq "ServerDataCenterNano") -or 
-            ($EditionId -eq "NanoServer") -or 
-            ($EditionId -eq "ServerTuva"))
-}
-
-
-function 
-Wait-Network()
-{
-    $connectedAdapter = Get-NetAdapter | Where-Object ConnectorPresent
-
-    if ($null -eq $connectedAdapter)
-    {
-        throw "No connected network"
-    }
-       
-    $startTime = Get-Date
-    $timeElapsed = $(Get-Date) - $startTime
-
-    while ($($timeElapsed).TotalMinutes -lt 5)
-    {
-        $readyNetAdapter = $connectedAdapter | Where-Object Status -eq 'Up'
-
-        if ($null -ne $readyNetAdapter)
-        {
-            return;
-        }
-
-        Write-Output "Waiting for network connectivity..."
-        Start-Sleep -sec 5
-
-        $timeElapsed = $(Get-Date) - $startTime
-    }
-
-    throw "Network not connected after 5 minutes"
-}
-
 
 function 
 Install-Containerd()
