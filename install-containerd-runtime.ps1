@@ -1,3 +1,6 @@
+# Source: https://raw.githubusercontent.com/microsoft/Windows-Containers/Main/helpful_tools/Install-ContainerdRuntime/install-containerd-runtime.ps1
+# Changes (mloskot):
+# - Bump versions of containerd and nerdctl to latest
 ############################################################
 # Script to set up a VM instance to run with containerd and nerdctl
 ############################################################
@@ -56,11 +59,11 @@
 param(
     [string]
     [ValidateNotNullOrEmpty()]
-    $ContainerDVersion = "1.6.6",
+    $ContainerDVersion = "1.7.0",
 
     [string]
     [ValidateNotNullOrEmpty()]
-    $NerdCTLVersion = "0.21.0",
+    $NerdCTLVersion = "1.4.0",
 
     [string]
     [ValidateNotNullOrEmpty()]
@@ -526,15 +529,15 @@ Install-Containerd()
     param(
         [string]
         [ValidateNotNullOrEmpty()]
-        $ContainerdVersion = "1.6.6",
+        $ContainerdVersion,
 
         [string]
         [ValidateNotNullOrEmpty()]
-        $NerdCTLVersion = "0.21.0",
+        $NerdCTLVersion,
 
         [string]
         [ValidateNotNullOrEmpty()]
-        $WinCNIVersion = "0.3.0",
+        $WinCNIVersion,
 
         [string]
         $ContainerBaseImage
