@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vagrant.plugins = ["vagrant-vbguest"]
+  config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
+
+  config.vm.box = "mloskot/sig-windows-dev-tools-windows-2022-g"
+  #config.vm.box_version ="1.0"
+  config.vm.communicator = "winrm"
+  config.vm.guest = :windows
+
+  config.vm.provider :virtualbox do |vb|
+    vb.cpus = 2
+    vb.memory = 8192
+    vb.gui = false
+    # Explicitly guest type (above) and OS type
+    vb.customize ["modifyvm", :id, "--ostype", 'Windows2022_64']
+    # Explicitly use Windows guest default graphics controller
+    vb.customize ['modifyvm', :id, '--graphicscontroller', 'vboxsvga']
+    # Explicitly disable unnecessary features for better performance
+    vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+    vb.customize ["modifyvm", :id, "--accelerate2dvideo", "off"]
+    vb.customize ['modifyvm', :id, '--clipboard', 'disabled']
+    vb.customize ['modifyvm', :id, '--draganddrop', 'disabled']
+    vb.customize ['modifyvm', :id, '--vrde', 'off']
+  end
+
+  config.winrm.username = "vagrant"
+  config.winrm.password = "vagrant"
+
+end
